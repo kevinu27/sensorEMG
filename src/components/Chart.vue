@@ -5,7 +5,7 @@
   <p>BLE state: <strong><span id="bleState" style="color:#d13a30;">{{ connectionStatus }}</span></strong></p>
   <h2>Fetched Value</h2>
   <p><span id="valueContainer">{{valueContainer}}</span></p>
-  <p>Last reading: <span id="timestamp"></span></p>
+  <p>Last reading: <span id="timestamp">{{ this.dateTime }} </span></p>
   <h2>Control GPIO 2</h2>
   <button id="onButton">ON</button>
   <button id="offButton">OFF</button>
@@ -28,7 +28,8 @@
         bleServiceFound:null,
         sensorCharacteristicFound:null,
         valueContainer: 'NaN',
-        connectionStatus:'Disconnected'
+        connectionStatus:'Disconnected',
+        dateTime: null
       };
     },
     methods: {
@@ -105,7 +106,7 @@
                     .then(() => {
                         console.log("Device Disconnected");
                         this.connectionStatus = "Device Disconnected";
-                        bleStateContainer.style.color = "#d13a30";
+                        // bleStateContainer.style.color = "#d13a30";
 
                     })
                     .catch(error => {
@@ -131,7 +132,19 @@
         const newValueReceived = new TextDecoder().decode(event.target.value);
         console.log("Characteristic value changed: ", newValueReceived);
         this.valueContainer = newValueReceived;
-        timestampContainer.innerHTML = getDateTime();
+        this.dateTime = this.getDateTime();
+      },
+      getDateTime(){
+        var currentdate = new Date();
+        var day = ("00" + currentdate.getDate()).slice(-2); // Convert day to string and slice
+        var month = ("00" + (currentdate.getMonth() + 1)).slice(-2);
+        var year = currentdate.getFullYear();
+        var hours = ("00" + currentdate.getHours()).slice(-2);
+        var minutes = ("00" + currentdate.getMinutes()).slice(-2);
+        var seconds = ("00" + currentdate.getSeconds()).slice(-2);
+
+        var datetime = day + "/" + month + "/" + year + " at " + hours + ":" + minutes + ":" + seconds;
+        return datetime;
       },
     },
   };
