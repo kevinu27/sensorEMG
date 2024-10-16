@@ -2,9 +2,9 @@
   <h1>ESP32 Web BLE Application</h1>
   <button id="connectBleButton" @click="connectBleButton">Connect to BLE Device</button>
   <button id="disconnectBleButton"  @click="disconnectDevice">Disconnect BLE Device</button>
-  <p>BLE state: <strong><span id="bleState" style="color:#d13a30;">Disconnected</span></strong></p>
+  <p>BLE state: <strong><span id="bleState" style="color:#d13a30;">{{ connectionStatus }}</span></strong></p>
   <h2>Fetched Value</h2>
-  <p><span id="valueContainer">NaN</span></p>
+  <p><span id="valueContainer">{{valueContainer}}</span></p>
   <p>Last reading: <span id="timestamp"></span></p>
   <h2>Control GPIO 2</h2>
   <button id="onButton">ON</button>
@@ -26,7 +26,9 @@
         //Global Variables to Handle Bluetooth
         bleServer:null,
         bleServiceFound:null,
-        sensorCharacteristicFound:null
+        sensorCharacteristicFound:null,
+        valueContainer: 'NaN',
+        connectionStatus:'Disconnected'
       };
     },
     methods: {
@@ -57,9 +59,9 @@
         .then(device => {
             console.log('Device Selected:', device.name);
             // aqui poner el data para cambiar el color y el contenido
-            // bleStateContainer.innerHTML = 'Connected to device ' + device.name;
+            this.connectionStatus = 'Connected to device ' + device.name;
             // bleStateContainer.style.color = "#24af37";
-            device.addEventListener('gattservicedisconnected', onDisconnected);
+            // device.addEventListener('gattservicedisconnected', onDisconnected);
             return device.gatt.connect();
         })
         .then(gattServer =>{
@@ -75,7 +77,7 @@
         .then(characteristic => {
             console.log("Characteristic discovered:", characteristic.uuid);
             this.sensorCharacteristicFound = characteristic;
-            characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicChange);
+            characteristic.addEventListener('characteristicvaluechanged', this.handleCharacteristicChange);
             characteristic.startNotifications();
             console.log("Notifications Started.");
             return characteristic.readValue();
@@ -84,7 +86,7 @@
             console.log("Read value: ", value);
             const decodedValue = new TextDecoder().decode(value);
             console.log("Decoded value: ", decodedValue);
-            retrievedValue.innerHTML = decodedValue;
+            this.valueContainer = decodedValue;
             console.log(decodedValue)
         })
         .catch(error => {
@@ -93,16 +95,16 @@
       },
       disconnectDevice(){
         console.log("Disconnect Device.");
-        if (bleServer && bleServer.connected) {
-            if (sensorCharacteristicFound) {
-                sensorCharacteristicFound.stopNotifications()
+        if (this.bleServer && this.bleServer.connected) {
+            if (this.sensorCharacteristicFound) {
+                this.sensorCharacteristicFound.stopNotifications()
                     .then(() => {
                         console.log("Notifications Stopped");
-                        return bleServer.disconnect();
+                        return this.bleServer.disconnect();
                     })
                     .then(() => {
                         console.log("Device Disconnected");
-                        bleStateContainer.innerHTML = "Device Disconnected";
+                        this.connectionStatus = "Device Disconnected";
                         bleStateContainer.style.color = "#d13a30";
 
                     })
@@ -117,6 +119,19 @@
             console.error("Bluetooth is not connected.");
             window.alert("Bluetooth is not connected.")
         }
+      },
+      onDisconnected(event) {
+        console.log('Device Disconnected:', event.target.device.name);
+        this.connectionStatus = "Device disconnected";
+        // bleStateContainer.style.color = "#d13a30";
+
+        this.connectToDevice();
+      },
+      handleCharacteristicChange(event) {
+        const newValueReceived = new TextDecoder().decode(event.target.value);
+        console.log("Characteristic value changed: ", newValueReceived);
+        this.valueContainer = newValueReceived;
+        timestampContainer.innerHTML = getDateTime();
       },
     },
   };
