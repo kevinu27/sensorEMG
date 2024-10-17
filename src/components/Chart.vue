@@ -1,159 +1,99 @@
+<!-- MovingChart.vue -->
 <template>
-  <div class="blueetooth-dashboard">
-    <button id="connectBleButton" @click="connectBleButton">Conectar dispositivo Blueetooth</button>
-    <button id="disconnectBleButton"  @click="disconnectDevice">Desconectar dispositivo Blueetooth</button>
-    <p>Estado del dispositivo Blueetooth: <strong><span id="bleState" style="color:#d13a30;">{{ connectionStatus }}</span></strong></p>
-    <h2>Valor recibido</h2>
-    <p><span id="valueContainer">{{valueContainer}}</span></p>
-    <p>Hora última lectura: <span id="timestamp">{{ this.dateTime }} </span></p>
-    <!-- <h2>Control GPIO 2</h2>
-    <button id="onButton">ON</button>
-    <button id="offButton">OFF</button>
-    <p>Last value sent: <span id="valueSent"></span></p> -->
-  </div>
+  <canvas ref="chartCanvas" :width="600" :height="400"></canvas>
 </template>
-  
+
 <script>
-  export default {
-    name: 'Chart',
-    data() {
-      return {
-        isMenuOpen: false,
-            //Define BLE Device Specs
-        deviceName :'ESP32',
-        bleService : '19b10000-e8f2-537e-4f6c-d104768a1214',
-        ledCharacteristic : '19b10002-e8f2-537e-4f6c-d104768a1214',
-        sensorCharacteristic: '19b10001-e8f2-537e-4f6c-d104768a1214',
-        //Global Variables to Handle Bluetooth
-        bleServer:null,
-        bleServiceFound:null,
-        sensorCharacteristicFound:null,
-        valueContainer: '',
-        connectionStatus:'Desconectado',
-        dateTime: null
-      };
-    },
-    methods: {
-      connectBleButton() {
-        this.isMenuOpen = !this.isMenuOpen;
-        console.log('connectBleButton')
-        if (this.isWebBluetoothEnabled()){
-            this.connectToDevice();
-        }
-      },
-      isWebBluetoothEnabled(){
-        console.log('isWebBluetoothEnabled')
-        if (!navigator.bluetooth) {
-            console.log("Web Bluetooth API is not available in this browser!");
-            bleStateContainer.innerHTML = "Web Bluetooth API is not available in this browser!";
-            return false
-        }
-        console.log('Web Bluetooth API supported in this browser.');
-        return true
-      },
-      connectToDevice(){
-        console.log('connectToDevice')
-        console.log('Initializing Bluetooth...');
-        navigator.bluetooth.requestDevice({
-            filters: [{name: this.deviceName}],
-            optionalServices: [this.bleService]
-        })
-        .then(device => {
-            console.log('Device Selected:', device.name);
-            // aqui poner el data para cambiar el color y el contenido
-            this.connectionStatus = 'Connected to device ' + device.name;
-            // bleStateContainer.style.color = "#24af37";
-            // device.addEventListener('gattservicedisconnected', onDisconnected);
-            return device.gatt.connect();
-        })
-        .then(gattServer =>{
-            this.bleServer = gattServer;
-            console.log("Connected to GATT Server");
-            return this.bleServer.getPrimaryService(this.bleService);
-        })
-        .then(service => {
-            this.bleServiceFound = service;
-            console.log("Service discovered:", service.uuid);
-            return service.getCharacteristic(this.sensorCharacteristic);
-        })
-        .then(characteristic => {
-            console.log("Characteristic discovered:", characteristic.uuid);
-            this.sensorCharacteristicFound = characteristic;
-            characteristic.addEventListener('characteristicvaluechanged', this.handleCharacteristicChange);
-            characteristic.startNotifications();
-            console.log("Notifications Started.");
-            return characteristic.readValue();
-        })
-        .then(value => {
-            console.log("Read value: ", value);
-            const decodedValue = new TextDecoder().decode(value);
-            console.log("Decoded value: ", decodedValue);
-            this.valueContainer = decodedValue;
-            console.log(decodedValue)
-        })
-        .catch(error => {
-            console.log('Error: ', error);
-        })
-      },
-      disconnectDevice(){
-        console.log("Disconnect Device.");
-        if (this.bleServer && this.bleServer.connected) {
-            if (this.sensorCharacteristicFound) {
-                this.sensorCharacteristicFound.stopNotifications()
-                    .then(() => {
-                        console.log("Notifications Stopped");
-                        return this.bleServer.disconnect();
-                    })
-                    .then(() => {
-                        console.log("Device Disconnected");
-                        this.connectionStatus = "Dispositivo desconectado";
-                        // bleStateContainer.style.color = "#d13a30";
+export default {
+  name: 'Chart',
+  data() {
+    return {
+      dataArray: [30, 40, 35, 50, 49, 60, 70, 91],
+      maxDataPoints: 8,
+      currentIndex: 8,
+      ctx: null,
+      intervalId: null
+    }
+  },
+  mounted() {
+    const canvas = this.$refs.chartCanvas;
+    this.ctx = canvas.getContext('2d');
+    this.drawChart();
+    
+    // Start interval when component is mounted
+    this.intervalId = setInterval(() => {
+      let newValue = Math.floor(Math.random() * 100) + 1;
+      this.addData(newValue);
+    }, 3000);
+  },
+  beforeUnmount() {
+    // Clean up interval when component is unmounted
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
+  },
+  methods: {
+    drawChart() {
+      const canvas = this.$refs.chartCanvas;
+      const width = canvas.width;
+      const height = canvas.height;
+      const padding = 40;
+      const dataMax = Math.max(...this.dataArray);
+      const dataMin = Math.min(...this.dataArray);
 
-                    })
-                    .catch(error => {
-                        console.log("An error occurred:", error);
-                    });
-            } else {
-                console.log("No characteristic found to disconnect.");
-            }
+      this.ctx.clearRect(0, 0, width, height);
+
+      // Draw axes
+      this.ctx.beginPath();
+      this.ctx.moveTo(padding, padding);
+      this.ctx.lineTo(padding, height - padding);
+      this.ctx.lineTo(width - padding, height - padding);
+      this.ctx.stroke();
+
+      // Draw curved line
+      this.ctx.beginPath();
+      this.dataArray.forEach((value, index) => {
+        const x = padding + (index * (width - 2 * padding) / (this.maxDataPoints - 1));
+        const y = height - padding - ((value - dataMin) * (height - 2 * padding) / (dataMax - dataMin));
+
+        if (index === 0) {
+          this.ctx.moveTo(x, y);
         } else {
-            // Throw an error if Bluetooth is not connected
-            console.error("Bluetooth is not connected.");
-            window.alert("Bluetooth is not connected.")
+          // Calculate control points for the curve
+          const prevX = padding + ((index - 1) * (width - 2 * padding) / (this.maxDataPoints - 1));
+          const prevY = height - padding - ((this.dataArray[index - 1] - dataMin) * (height - 2 * padding) / (dataMax - dataMin));
+          const midX = (prevX + x) / 2;
+          
+          this.ctx.bezierCurveTo(midX, prevY, midX, y, x, y);
         }
-      },
-      onDisconnected(event) {
-        console.log('Device Disconnected:', event.target.device.name);
-        this.connectionStatus = "Device disconnected";
-        // bleStateContainer.style.color = "#d13a30";
 
-        this.connectToDevice();
-      },
-      handleCharacteristicChange(event) {
-        const newValueReceived = new TextDecoder().decode(event.target.value);
-        console.log("Characteristic value changed: ", newValueReceived);
-        this.valueContainer = newValueReceived;
-        this.dateTime = this.getDateTime();
-      },
-      getDateTime(){
-        var currentdate = new Date();
-        var day = ("00" + currentdate.getDate()).slice(-2); // Convert day to string and slice
-        var month = ("00" + (currentdate.getMonth() + 1)).slice(-2);
-        var year = currentdate.getFullYear();
-        var hours = ("00" + currentdate.getHours()).slice(-2);
-        var minutes = ("00" + currentdate.getMinutes()).slice(-2);
-        var seconds = ("00" + currentdate.getSeconds()).slice(-2);
+        // Draw point
+        this.ctx.fillStyle = 'blue';
+        this.ctx.fillRect(x - 3, y - 3, 6, 6);
+      });
+      this.ctx.strokeStyle = 'blue';
+      this.ctx.stroke();
 
-        var datetime = day + "/" + month + "/" + year + " at " + hours + ":" + minutes + ":" + seconds;
-        return datetime;
-      },
+      // Draw labels
+      this.ctx.fillStyle = 'black';
+      this.ctx.font = '12px Arial';
+      this.dataArray.forEach((value, index) => {
+        const x = padding + (index * (width - 2 * padding) / (this.maxDataPoints - 1));
+        const y = height - padding - ((value - dataMin) * (height - 2 * padding) / (dataMax - dataMin));
+        const labelIndex = this.currentIndex - this.dataArray.length + index + 1;
+        this.ctx.fillText(labelIndex.toString(), x - 5, height - padding + 20);
+        this.ctx.fillText(value.toString(), x - 10, y - 10);
+      });
     },
-  };
-</script>
-  
-<style scoped>
-  .blueetooth-dashboard{
-    margin-top: 7rem;
+    addData(newValue) {
+      this.currentIndex++;
+      if (this.dataArray.length >= this.maxDataPoints) {
+        this.dataArray.shift();
+      }
+      this.dataArray.push(newValue);
+      this.drawChart();
+    }
   }
-</style>
+}
+</script>
   

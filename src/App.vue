@@ -1,12 +1,14 @@
 <script setup>
 // import HelloWorld from './components/HelloWorld.vue'
 import Header from './components/Header.vue'
-import Chart from './components/Chart.vue'
+import Bluetooth from './components/Bluetooth.vue'
+import Chart from './components/Chart.vue';
 </script>
 
 <template>
   <div class="app">
     <Header  />
+    <Bluetooth  />
     <Chart  />
   </div>
 </template>
