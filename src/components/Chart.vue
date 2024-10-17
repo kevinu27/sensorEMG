@@ -1,15 +1,16 @@
 <template>
-  <h1>ESP32 Web BLE Application</h1>
-  <button id="connectBleButton" @click="connectBleButton">Connect to BLE Device</button>
-  <button id="disconnectBleButton"  @click="disconnectDevice">Disconnect BLE Device</button>
-  <p>BLE state: <strong><span id="bleState" style="color:#d13a30;">{{ connectionStatus }}</span></strong></p>
-  <h2>Fetched Value</h2>
-  <p><span id="valueContainer">{{valueContainer}}</span></p>
-  <p>Last reading: <span id="timestamp">{{ this.dateTime }} </span></p>
-  <h2>Control GPIO 2</h2>
-  <button id="onButton">ON</button>
-  <button id="offButton">OFF</button>
-  <p>Last value sent: <span id="valueSent"></span></p>
+  <div class="blueetooth-dashboard">
+    <button id="connectBleButton" @click="connectBleButton">Conectar dispositivo Blueetooth</button>
+    <button id="disconnectBleButton"  @click="disconnectDevice">Desconectar dispositivo Blueetooth</button>
+    <p>Estado del dispositivo Blueetooth: <strong><span id="bleState" style="color:#d13a30;">{{ connectionStatus }}</span></strong></p>
+    <h2>Valor recibido</h2>
+    <p><span id="valueContainer">{{valueContainer}}</span></p>
+    <p>Hora última lectura: <span id="timestamp">{{ this.dateTime }} </span></p>
+    <!-- <h2>Control GPIO 2</h2>
+    <button id="onButton">ON</button>
+    <button id="offButton">OFF</button>
+    <p>Last value sent: <span id="valueSent"></span></p> -->
+  </div>
 </template>
   
 <script>
@@ -27,8 +28,8 @@
         bleServer:null,
         bleServiceFound:null,
         sensorCharacteristicFound:null,
-        valueContainer: 'NaN',
-        connectionStatus:'Disconnected',
+        valueContainer: '',
+        connectionStatus:'Desconectado',
         dateTime: null
       };
     },
@@ -105,7 +106,7 @@
                     })
                     .then(() => {
                         console.log("Device Disconnected");
-                        this.connectionStatus = "Device Disconnected";
+                        this.connectionStatus = "Dispositivo desconectado";
                         // bleStateContainer.style.color = "#d13a30";
 
                     })
@@ -151,6 +152,8 @@
 </script>
   
 <style scoped>
-  
+  .blueetooth-dashboard{
+    margin-top: 7rem;
+  }
 </style>
   
