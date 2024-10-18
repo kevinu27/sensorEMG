@@ -8,20 +8,25 @@ const store = createStore({
   },
   mutations: {
     addNewValueFromBluetooth(state, payload) {
-      console.log('action addNewValueFromBluetooth', payload)
+      console.log('mutation addNewValueFromBluetooth', payload)
       state.newValueFromBluetooth = payload;
     },
     addNewValueToAllValues(state, payload) {
-        console.log('action addNewValueToAllValues', payload)
+        console.log('mutation addNewValueToAllValues', payload)
         state.newValueFromBluetooth = payload ;
       },
     disconnect(state, payload) {
-        console.log('action addNewValueToAllValues', payload)
+        console.log('mutation addNewValueToAllValues', payload)
         state.bluetoothConnected = false ;
       },
     connect(state, payload) {
-        console.log('action addNewValueToAllValues', payload)
+        console.log('mutation addNewValueToAllValues', payload)
         state.bluetoothConnected = true ;
+      },
+      addNewValueToAllValues(state, payload) {
+        console.log('mutation addNewValueToAllValues', payload)
+        console.log('allValues', state.allValues)
+        state.allValues.push(payload) ;
       },
   },
   actions: {
@@ -32,10 +37,6 @@ const store = createStore({
         console.log('action setNewValueFromBluetooth', payload)
         commit('addNewValueFromBluetooth', payload)
     },
-    setNewValueToAllValues({ commit }, payload){
-        console.log('action setNewValueToAllValues')
-        commit('addNewValueToAllValues', payload)
-    },
     disconnect({ commit }, payload){
         console.log('action disconnect')
         commit('disconnect')
@@ -43,6 +44,10 @@ const store = createStore({
     connect({ commit }, payload){
         console.log('action connect')
         commit('connect')
+    },
+    addValueToAllValues({ commit }, payload){
+        console.log('action addValueToAllValues')
+        commit('addNewValueToAllValues', payload)
     },
   },
   getters: {

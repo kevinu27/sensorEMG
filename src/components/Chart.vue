@@ -24,6 +24,7 @@ export default {
     this.intervalId = setInterval(() => {
       let newValue = Math.floor(Math.random() * 100) + 1;
       this.addData(newValue);
+      this.$store.dispatch('addValueToAllValues', newValue)
     }, 3000);
     // console.log(this.$store.state.count)
   },
