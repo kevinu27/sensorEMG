@@ -1,12 +1,14 @@
 <template>
   <div class="blueetooth-dashboard">
-    <button id="connectBleButton" @click="connectBleButton">Conectar dispositivo Blueetooth</button>
-    <button id="disconnectBleButton"  @click="disconnectDevice">Desconectar dispositivo Blueetooth</button>
+    <button id="connectBleButton" @click="connectBleButton" v-if="!$store.state.bluetoothConnected">Conectar dispositivo Blueetooth</button>
+    <button id="disconnectBleButton"  @click="disconnectDevice"  v-if="$store.state.bluetoothConnected">Desconectar dispositivo Blueetooth</button>
     <p>Estado del dispositivo Blueetooth: <strong><span id="bleState" style="color:#d13a30;">{{ connectionStatus }}</span></strong></p>
-    <h2>Valor recibido</h2>
-    <!-- <p><span id="valueContainer">{{valueContainer}}</span></p> -->
-    <p><span >{{ $store.state.newValueFromBluetooth }}</span></p>
-    <p>Hora última lectura: <span id="timestamp">{{ this.dateTime }} </span></p>
+    <div v-if="$store.state.bluetoothConnected">
+      <h2>Valor recibido</h2>
+      <!-- <p><span id="valueContainer">{{valueContainer}}</span></p> -->
+      <p><span >{{ $store.state.newValueFromBluetooth }}</span></p>
+      <p>Hora última lectura: <span id="timestamp">{{ this.dateTime }} </span></p>
+    </div>
     <!-- <h2>Control GPIO 2</h2>
     <button id="onButton">ON</button>
     <button id="offButton">OFF</button>
@@ -33,7 +35,10 @@
         connectionStatus:'Desconectado',
         dateTime: null
       };
-    },
+    },  mounted() {
+
+    console.log("-----", this.$store.state.newValueFromBluetooth != undefined)
+  },
     methods: {
       connectBleButton() {
         this.isMenuOpen = !this.isMenuOpen;
@@ -91,7 +96,9 @@
             console.log("Decoded value: ", decodedValue);
             // this.valueContainer = decodedValue;
             this.$store.dispatch('setNewValueFromBluetooth', decodedValue)
+            this.$store.dispatch('connect')
             console.log(decodedValue)
+
         })
         .catch(error => {
             console.log('Error: ', error);
@@ -118,6 +125,7 @@
             } else {
                 console.log("No characteristic found to disconnect.");
             }
+            this.$store.dispatch('disconnect')
         } else {
             // Throw an error if Bluetooth is not connected
             console.error("Bluetooth is not connected.");

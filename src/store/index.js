@@ -2,8 +2,9 @@ import { createStore } from 'vuex';
 
 const store = createStore({
   state: {
-    newValueFromBluetooth: 0,
-    allValues: []
+    newValueFromBluetooth: undefined,
+    allValues: [],
+    bluetoothConnected: false,
   },
   mutations: {
     addNewValueFromBluetooth(state, payload) {
@@ -13,6 +14,14 @@ const store = createStore({
     addNewValueToAllValues(state, payload) {
         console.log('action addNewValueToAllValues', payload)
         state.newValueFromBluetooth = payload ;
+      },
+    disconnect(state, payload) {
+        console.log('action addNewValueToAllValues', payload)
+        state.bluetoothConnected = false ;
+      },
+    connect(state, payload) {
+        console.log('action addNewValueToAllValues', payload)
+        state.bluetoothConnected = true ;
       },
   },
   actions: {
@@ -26,6 +35,14 @@ const store = createStore({
     setNewValueToAllValues({ commit }, payload){
         console.log('action setNewValueToAllValues')
         commit('addNewValueToAllValues', payload)
+    },
+    disconnect({ commit }, payload){
+        console.log('action disconnect')
+        commit('disconnect')
+    },    
+    connect({ commit }, payload){
+        console.log('action connect')
+        commit('connect')
     },
   },
   getters: {
