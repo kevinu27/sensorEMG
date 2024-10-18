@@ -4,7 +4,8 @@
     <button id="disconnectBleButton"  @click="disconnectDevice">Desconectar dispositivo Blueetooth</button>
     <p>Estado del dispositivo Blueetooth: <strong><span id="bleState" style="color:#d13a30;">{{ connectionStatus }}</span></strong></p>
     <h2>Valor recibido</h2>
-    <p><span id="valueContainer">{{valueContainer}}</span></p>
+    <!-- <p><span id="valueContainer">{{valueContainer}}</span></p> -->
+    <p><span >{{ $store.state.newValueFromBluetooth }}</span></p>
     <p>Hora última lectura: <span id="timestamp">{{ this.dateTime }} </span></p>
     <!-- <h2>Control GPIO 2</h2>
     <button id="onButton">ON</button>
@@ -28,7 +29,7 @@
         bleServer:null,
         bleServiceFound:null,
         sensorCharacteristicFound:null,
-        valueContainer: '',
+        // valueContainer: '',
         connectionStatus:'Desconectado',
         dateTime: null
       };
@@ -88,7 +89,8 @@
             console.log("Read value: ", value);
             const decodedValue = new TextDecoder().decode(value);
             console.log("Decoded value: ", decodedValue);
-            this.valueContainer = decodedValue;
+            // this.valueContainer = decodedValue;
+            this.$store.dispatch('setNewValueFromBluetooth', decodedValue)
             console.log(decodedValue)
         })
         .catch(error => {
@@ -132,7 +134,8 @@
       handleCharacteristicChange(event) {
         const newValueReceived = new TextDecoder().decode(event.target.value);
         console.log("Characteristic value changed: ", newValueReceived);
-        this.valueContainer = newValueReceived;
+        // this.valueContainer = newValueReceived;
+        this.$store.dispatch('setNewValueFromBluetooth', newValueReceived)
         this.dateTime = this.getDateTime();
       },
       getDateTime(){

@@ -25,6 +25,7 @@ export default {
       let newValue = Math.floor(Math.random() * 100) + 1;
       this.addData(newValue);
     }, 3000);
+    // console.log(this.$store.state.count)
   },
   beforeUnmount() {
     // Clean up interval when component is unmounted
