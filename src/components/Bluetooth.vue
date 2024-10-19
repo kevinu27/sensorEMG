@@ -37,7 +37,6 @@
       };
     },  mounted() {
 
-    console.log("-----", this.$store.state.newValueFromBluetooth != undefined)
   },
     methods: {
       connectBleButton() {
@@ -95,6 +94,7 @@
             const decodedValue = new TextDecoder().decode(value);
             console.log("Decoded value: ", decodedValue);
             // this.valueContainer = decodedValue;
+            this.$store.dispatch('addValueToAllValues', decodedValue)
             this.$store.dispatch('setNewValueFromBluetooth', decodedValue)
             this.$store.dispatch('connect')
             console.log(decodedValue)
@@ -144,6 +144,7 @@
         console.log("Characteristic value changed: ", newValueReceived);
         // this.valueContainer = newValueReceived;
         this.$store.dispatch('setNewValueFromBluetooth', newValueReceived)
+        this.$store.dispatch('addValueToAllValues', newValueReceived)
         this.dateTime = this.getDateTime();
       },
       getDateTime(){

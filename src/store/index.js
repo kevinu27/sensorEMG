@@ -3,7 +3,7 @@ import { createStore } from 'vuex';
 const store = createStore({
   state: {
     newValueFromBluetooth: undefined,
-    allValues: [],
+    allValues: [0],
     bluetoothConnected: false,
   },
   mutations: {
@@ -16,17 +16,15 @@ const store = createStore({
         state.newValueFromBluetooth = payload ;
       },
     disconnect(state, payload) {
-        console.log('mutation addNewValueToAllValues', payload)
         state.bluetoothConnected = false ;
       },
     connect(state, payload) {
-        console.log('mutation addNewValueToAllValues', payload)
         state.bluetoothConnected = true ;
       },
       addNewValueToAllValues(state, payload) {
         console.log('mutation addNewValueToAllValues', payload)
-        console.log('allValues', state.allValues)
         state.allValues.push(payload) ;
+        console.log('allValues----', state.allValues)
       },
   },
   actions: {
@@ -34,15 +32,12 @@ const store = createStore({
       commit('increment');
     },
     setNewValueFromBluetooth({ commit }, payload){
-        console.log('action setNewValueFromBluetooth', payload)
         commit('addNewValueFromBluetooth', payload)
     },
     disconnect({ commit }, payload){
-        console.log('action disconnect')
         commit('disconnect')
     },    
     connect({ commit }, payload){
-        console.log('action connect')
         commit('connect')
     },
     addValueToAllValues({ commit }, payload){

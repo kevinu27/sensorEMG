@@ -1,6 +1,6 @@
 <!-- MovingChart.vue -->
 <template>
-  <canvas ref="chartCanvas" :width="600" :height="400"></canvas>
+  <canvas ref="chartCanvas" :width="600" :height="400" v-show="$store.state.bluetoothConnected"></canvas>
 </template>
 
 <script>
@@ -24,7 +24,7 @@ export default {
     this.intervalId = setInterval(() => {
       let newValue = Math.floor(Math.random() * 100) + 1;
       this.addData(newValue);
-      this.$store.dispatch('addValueToAllValues', newValue)
+      // this.$store.dispatch('addValueToAllValues', newValue)
     }, 3000);
     // console.log(this.$store.state.count)
   },
@@ -40,8 +40,9 @@ export default {
       const width = canvas.width;
       const height = canvas.height;
       const padding = 40;
-      const dataMax = Math.max(...this.dataArray);
-      const dataMin = Math.min(...this.dataArray);
+      const dataMax = Math.max(...this.$store.state.allValues);
+      const dataMin = Math.min(...this.$store.state.allValues);
+      // this.$store.state.allValues
 
       this.ctx.clearRect(0, 0, width, height);
 
@@ -54,7 +55,7 @@ export default {
 
       // Draw curved line
       this.ctx.beginPath();
-      this.dataArray.forEach((value, index) => {
+      this.$store.state.allValues.forEach((value, index) => {
         const x = padding + (index * (width - 2 * padding) / (this.maxDataPoints - 1));
         const y = height - padding - ((value - dataMin) * (height - 2 * padding) / (dataMax - dataMin));
 
@@ -63,7 +64,7 @@ export default {
         } else {
           // Calculate control points for the curve
           const prevX = padding + ((index - 1) * (width - 2 * padding) / (this.maxDataPoints - 1));
-          const prevY = height - padding - ((this.dataArray[index - 1] - dataMin) * (height - 2 * padding) / (dataMax - dataMin));
+          const prevY = height - padding - ((this.$store.state.allValues[index - 1] - dataMin) * (height - 2 * padding) / (dataMax - dataMin));
           const midX = (prevX + x) / 2;
           
           this.ctx.bezierCurveTo(midX, prevY, midX, y, x, y);
@@ -79,20 +80,20 @@ export default {
       // Draw labels
       this.ctx.fillStyle = 'black';
       this.ctx.font = '12px Arial';
-      this.dataArray.forEach((value, index) => {
+      this.$store.state.allValues.forEach((value, index) => {
         const x = padding + (index * (width - 2 * padding) / (this.maxDataPoints - 1));
         const y = height - padding - ((value - dataMin) * (height - 2 * padding) / (dataMax - dataMin));
-        const labelIndex = this.currentIndex - this.dataArray.length + index + 1;
+        const labelIndex = this.currentIndex - this.$store.state.allValues.length + index + 1;
         this.ctx.fillText(labelIndex.toString(), x - 5, height - padding + 20);
         this.ctx.fillText(value.toString(), x - 10, y - 10);
       });
     },
     addData(newValue) {
       this.currentIndex++;
-      if (this.dataArray.length >= this.maxDataPoints) {
-        this.dataArray.shift();
+      if (this.$store.state.allValues.length >= this.maxDataPoints) {
+        this.$store.state.allValues.shift();
       }
-      this.dataArray.push(newValue);
+      this.$store.state.allValues.push(newValue);
       this.drawChart();
     }
   }

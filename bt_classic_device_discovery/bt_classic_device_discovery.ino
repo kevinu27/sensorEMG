@@ -39,22 +39,21 @@ class MyServerCallbacks: public BLEServerCallbacks {
       deviceConnected = false;
     }
 };
-
 class MyCharacteristicCallbacks : public BLECharacteristicCallbacks {
-    void onWrite(BLECharacteristic* pLedCharacteristic) {
-        std::string value = pLedCharacteristic->getValue();
-        if (value.length() > 0) {
-            Serial.print("Characteristic event, written: ");
-            Serial.println(static_cast<int>(value[0])); // Print the integer value
+  void onWrite(BLECharacteristic* pLedCharacteristic) {
+    String value = pLedCharacteristic->getValue();
+    if (value.length() > 0) {
+      Serial.print("Characteristic event, written: ");
+      Serial.println(static_cast<int>(value[0])); // Print the integer value
 
-            int receivedValue = static_cast<int>(value[0]);
-            if (receivedValue == 1) {
-                digitalWrite(ledPin, HIGH);
-            } else {
-                digitalWrite(ledPin, LOW);
-            }
-        }
+      int receivedValue = static_cast<int>(value[0]);
+      if (receivedValue == 1) {
+        digitalWrite(ledPin, HIGH);
+      } else {
+        digitalWrite(ledPin, LOW);
+      }
     }
+  }
 };
 
 void setup() {
@@ -111,7 +110,7 @@ void loop() {
     if (deviceConnected) {
         pSensorCharacteristic->setValue(String(value).c_str());
         pSensorCharacteristic->notify();
-        if (value > 200) {
+        if (value > 60) {
             value= 2;
           }
           else {
